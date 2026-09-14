@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  passwordHash String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  comments Comment[]
+  sessions Session[]
+}
+model Session {
+  tokenHash String @id
+  userId String
+  expiresAt DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+  @@index([userId])
+}
+model Store {
+  id String @id @default(cuid())
+  code String @unique
+  name String
+  address String
+  city String
+  region String
+  latitude Float
+  longitude Float
+  status String @default("Активен")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  comments Comment[]
+}
+model Comment {
+  id String @id @default(cuid())
+  storeId String
+  userId String
+  text String @db.VarChar(2000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@index([storeId, createdAt, id])
+}
+model AuthAttempt {
+  key String @id
+  count Int @default(1)
+  resetsAt DateTime
+  @@index([resetsAt])
+}

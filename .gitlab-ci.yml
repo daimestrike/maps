@@ -1,0 +1,28 @@
+image: node:22-bookworm-slim
+stages: [test]
+verify:
+  stage: test
+  services:
+    - name: postgres:17-alpine
+      alias: db
+  variables:
+    POSTGRES_USER: x5
+    POSTGRES_PASSWORD: ci_only_password
+    POSTGRES_DB: x5_test
+    DATABASE_URL: postgresql://x5:ci_only_password@db:5432/x5_test?schema=public
+    APP_URL: http://localhost:3000
+    COOKIE_SECURE: "false"
+    SEED_PASSWORD: CI-demo-password-2026
+  before_script:
+    - apt-get update && apt-get install -y openssl ca-certificates
+    - cp .env.example .env
+    - npm ci
+  script:
+    - npm run db:migrate
+    - npm run db:seed
+    - npm run build
+    - npm run check
+    - npm start > /tmp/x5-server.log 2>&1 &
+    - npm run test:integration
+  after_script:
+    - cat /tmp/x5-server.log || true
