@@ -3,6 +3,7 @@ WORKDIR /app
 ENV NEXT_PUBLIC_TILE_URL=off
 RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
+COPY prisma/schema.prisma ./prisma/schema.prisma
 RUN npm ci
 COPY . .
 RUN npm run build
