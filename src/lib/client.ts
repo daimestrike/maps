@@ -6,6 +6,6 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data;
 }
 export type StorePoint = { id: string; code: string; name: string; address: string; city: string; latitude: number; longitude: number };
-export type StoreDetail = StorePoint & { region: string; status: string };
+export type StoreDetail = StorePoint & { region: string; status: string; openingHours: string | null; coordinatesApproximate: boolean; territory: string | null; macroregion: string | null; division: string | null; cluster: string | null; cfo: string | null; costCenter: string | null; sapPlant: string | null; formatCode: string | null; formatName: string | null; legalEntity: string | null; metro: string | null };
 export type Comment = { id: string; text: string; createdAt: string; user: { id: string; name: string } };
 export type CommentPage = { items: Comment[]; nextCursor: string | null };

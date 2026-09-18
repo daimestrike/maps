@@ -1,0 +1,10 @@
+.store-title-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.store-title-actions .status { margin: 0; }
+.store-title-actions button { font-size: 11px; padding: 6px 9px; }
+.coordinate-note { background: #fff8df; color: #765e15; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.5; }
+.store-edit { display: grid; gap: 14px; }
+.store-edit label { font-size: 11px; color: #66766b; }
+.store-edit input, .store-edit textarea { font-size: 13px; }
+.coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 5px 0 20px; }
+.detail dl > div { display: contents; }

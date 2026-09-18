@@ -33,6 +33,19 @@ model Store {
   latitude Float
   longitude Float
   status String @default("Активен")
+  territory String?
+  macroregion String?
+  division String?
+  cluster String?
+  cfo String?
+  costCenter String?
+  sapPlant String? @unique
+  formatCode String?
+  formatName String?
+  legalEntity String?
+  metro String?
+  openingHours String?
+  coordinatesApproximate Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   comments Comment[]

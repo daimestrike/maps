@@ -31,6 +31,8 @@ try {
   const search = await request('/api/stores?search=' + encodeURIComponent(store.code), { cookie });
   assert.equal(search.status, 200); assert.equal(search.data[0].id, store.id);
   assert.equal((await request(`/api/stores/${store.id}`, { cookie })).data.region, 'Москва');
+  const edited = await request(`/api/stores/${store.id}`, { cookie, method: 'PATCH', body: { ...store, name: 'Магазин после редактирования', latitude: 55.76, longitude: 37.62, status: 'Активен', openingHours: '08:00 - 22:00' } });
+  assert.equal(edited.status, 200); assert.equal(edited.data.name, 'Магазин после редактирования'); assert.equal(edited.data.coordinatesApproximate, false);
   const path = `/api/stores/${store.id}/comments`;
   assert.equal((await request(path, { body: { text: 'unauthorized' } })).status, 401);
   assert.equal((await request(path, { cookie, body: { text: ' ' } })).status, 400);

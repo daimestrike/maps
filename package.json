@@ -13,7 +13,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate",
-    "test:integration": "node --env-file=.env tests/integration.mjs"
+    "test:integration": "node --env-file=.env tests/integration.mjs",
+    "data:prepare": "node scripts/prepare-stores-data.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
