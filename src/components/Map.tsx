@@ -10,7 +10,10 @@ export default function Map({ stores, selected, onSelect }: { stores: StorePoint
   useEffect(() => {
     const instance = L.map(container.current!, { center: [55.75, 37.62], zoom: 5, zoomControl: false }); map.current = instance;
     L.control.zoom({ position: "bottomright" }).addTo(instance);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(instance);
+    if (process.env.NEXT_PUBLIC_TILE_URL !== "off") L.tileLayer(process.env.NEXT_PUBLIC_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(instance);
+    fetch("/russia-regions.geojson").then(response => response.json()).then(data => {
+      if (map.current === instance) L.geoJSON(data, { style: { color: "#8ca683", weight: 1, fillColor: "#e9f0e5", fillOpacity: .72 } }).addTo(instance).bringToBack();
+    }).catch(() => undefined);
     const group = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false }); cluster.current = group; instance.addLayer(group);
     const observer = new ResizeObserver(() => instance.invalidateSize()); observer.observe(container.current!);
     return () => { observer.disconnect(); instance.remove(); map.current = null; };

@@ -43,6 +43,17 @@ npm start
 
 `COOKIE_SECURE=false` нужен для локального HTTP, в том числе `npm start`. Порт по умолчанию 3000; при его изменении обновите `APP_URL`. `docker compose stop` останавливает БД, данные сохраняются в именованном томе. Не удаляйте том, если нужны данные.
 
+## Закрытый контур
+
+Для сервера Linux x86_64 используйте готовый artifact `maps-offline-linux-amd64` из GitHub Actions → **Build offline server bundle**. В архив уже включены приложение, Node.js, PostgreSQL, миграции и исходные данные; интернет на сервере не нужен.
+
+```sh
+tar -xzf maps-offline-linux-amd64.tar.gz
+sudo ./deploy.sh
+```
+
+На сервере требуются только Docker Engine 24+ и Docker Compose v2. Скрипт сам создаёт секреты, запускает сервисы и ждёт готовности приложения. Подробности находятся в `OFFLINE-README.md` внутри архива. Чтобы собрать такой архив самостоятельно, запустите `./build-offline-bundle.sh` на машине с Docker.
+
 ## Проверка MVP
 
 При запущенном приложении и доступной БД:

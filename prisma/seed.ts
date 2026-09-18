@@ -38,10 +38,15 @@ async function main() {
       legalEntity: empty(r[ix["Юридическое лицо"]]), metro: empty(r[ix["Метро"]]), openingHours: empty(r[ix["Время работы"]])
     } satisfies Prisma.StoreUncheckedCreateInput;
   });
-  for (let start = 0; start < rows.length; start += 200) {
-    const batch = rows.slice(start, start + 200);
-    await db.$transaction(batch.map(data => db.store.upsert({ where: { code: data.code }, create: data, update: data })));
-    if (start % 2000 === 0) console.log(`Imported ${Math.min(start + batch.length, rows.length)}/${rows.length}`);
+  const existing = await db.store.count();
+  if (existing < rows.length || process.env.FORCE_STORE_IMPORT === "true") {
+    for (let start = 0; start < rows.length; start += 200) {
+      const batch = rows.slice(start, start + 200);
+      await db.$transaction(batch.map(data => db.store.upsert({ where: { code: data.code }, create: data, update: data })));
+      if (start % 2000 === 0) console.log(`Imported ${Math.min(start + batch.length, rows.length)}/${rows.length}`);
+    }
+  } else {
+    console.log(`Store import skipped: database already contains ${existing} stores.`);
   }
   await db.store.deleteMany({ where: { code: { startsWith: "DEMO-" } } });
   console.log(`Seed ready: ${rows.length} stores and 2 demo users.`);
