@@ -19,7 +19,7 @@
 ```sh
 cp .env.example .env
 npm ci
-docker compose up -d --wait
+docker compose up -d db --wait
 npm run db:migrate
 npm run db:seed
 npm run dev
@@ -53,6 +53,8 @@ sudo ./deploy.sh
 ```
 
 На сервере требуются только Docker Engine 24+ и Docker Compose v2. Скрипт сам создаёт секреты, запускает сервисы и ждёт готовности приложения. Подробности находятся в `OFFLINE-README.md` внутри архива. Чтобы собрать такой архив самостоятельно, запустите `./build-offline-bundle.sh` на машине с Docker.
+
+При наличии интернета весь проект также запускается одной командой из обычного архива репозитория: `docker compose up -d --build`. Миграции, 25 680 магазинов и два стартовых пользователя создаются автоматически.
 
 ## Проверка MVP
 

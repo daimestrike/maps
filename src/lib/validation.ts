@@ -16,3 +16,12 @@ export const storeInput = z.object({
   status: z.string().trim().min(1).max(80),
   openingHours: z.string().trim().max(200).nullable().optional()
 });
+export const storeCreateInput = storeInput.omit({ latitude: true, longitude: true }).extend({
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional()
+}).refine(data => (data.latitude == null) === (data.longitude == null), "Укажите обе координаты или оставьте обе пустыми");
+export const geocodeInput = z.object({
+  address: z.string().trim().min(1).max(1000),
+  city: z.string().trim().min(1).max(200),
+  region: z.string().trim().min(1).max(200)
+});

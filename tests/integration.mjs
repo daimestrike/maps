@@ -5,7 +5,7 @@ const db = new PrismaClient();
 const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const emails = [`test-a-${suffix}@example.com`, `test-b-${suffix}@example.com`];
 const password = 'Integration-password-2026';
-let store;
+let store, createdStore;
 async function request(path, { cookie, body, origin = base, method = body ? 'POST' : 'GET' } = {}) {
   const response = await fetch(base + path, { method, headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
   return { status: response.status, data: await response.json(), cookie: response.headers.get('set-cookie')?.split(';')[0] };
@@ -33,6 +33,10 @@ try {
   assert.equal((await request(`/api/stores/${store.id}`, { cookie })).data.region, 'Москва');
   const edited = await request(`/api/stores/${store.id}`, { cookie, method: 'PATCH', body: { ...store, name: 'Магазин после редактирования', latitude: 55.76, longitude: 37.62, status: 'Активен', openingHours: '08:00 - 22:00' } });
   assert.equal(edited.status, 200); assert.equal(edited.data.name, 'Магазин после редактирования'); assert.equal(edited.data.coordinatesApproximate, false);
+  const geocoded = await request('/api/geocode', { cookie, body: { address: 'Тестовый адрес 2', city: 'Москва', region: 'Москва' } });
+  assert.equal(geocoded.status, 200); assert.equal(geocoded.data.approximate, true);
+  const created = await request('/api/stores', { cookie, body: { code: `CREATED-${suffix}`, name: 'Добавленный магазин', address: 'Тестовый адрес 2', city: 'Москва', region: 'Москва', status: 'Активен', openingHours: null } });
+  assert.equal(created.status, 201); assert.equal(created.data.coordinatesApproximate, true); createdStore = created.data;
   const path = `/api/stores/${store.id}/comments`;
   assert.equal((await request(path, { body: { text: 'unauthorized' } })).status, 401);
   assert.equal((await request(path, { cookie, body: { text: ' ' } })).status, 400);
@@ -56,6 +60,7 @@ try {
   assert.equal((await request('/api/auth/me', { cookie: b.cookie })).status, 401);
   console.log('PASS: registration, login, authorization, origin protection, search, validation, author identity, PostgreSQL persistence, two-user visibility, pagination, logout.');
 } finally {
+  if (createdStore) await db.store.delete({ where: { id: createdStore.id } });
   if (store) await db.store.delete({ where: { id: store.id } });
   await db.user.deleteMany({ where: { email: { in: emails } } });
   await db.$disconnect();

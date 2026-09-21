@@ -2,8 +2,6 @@ name: Build offline server bundle
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
 
 jobs:
   bundle:
@@ -22,9 +20,36 @@ jobs:
           tags: maps-app:offline
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Pack images and launcher
+      - name: Verify clean deployment and bundled catalog
         run: |
           docker pull --platform linux/amd64 postgres:17-alpine
+          cat > .env <<'EOF'
+          POSTGRES_USER=x5
+          POSTGRES_PASSWORD=test_database_password
+          POSTGRES_DB=x5_map
+          APP_PORT=3000
+          APP_URL=http://localhost:3000
+          COOKIE_SECURE=false
+          ALLOW_REGISTRATION=true
+          SEED_PASSWORD=X5-Integration-2026!
+          EOF
+          cleanup() {
+            docker compose -f compose.prod.yaml logs --tail=200 || true
+            docker compose -f compose.prod.yaml down -v || true
+          }
+          trap cleanup EXIT
+          docker compose -f compose.prod.yaml up -d
+          for attempt in $(seq 1 120); do
+            status="$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose -f compose.prod.yaml ps -q app)" 2>/dev/null || true)"
+            [ "$status" = healthy ] && break
+            sleep 5
+          done
+          [ "$status" = healthy ]
+          count="$(docker compose -f compose.prod.yaml exec -T db psql -U x5 -d x5_map -tAc 'SELECT count(*) FROM "Store"')"
+          [ "$count" = 25680 ]
+          curl --fail --silent --show-error -H 'Origin: http://localhost:3000' -H 'Content-Type: application/json' --data '{"email":"admin@x5.local","password":"X5-Integration-2026!"}' http://localhost:3000/api/auth/login >/dev/null
+      - name: Pack images and launcher
+        run: |
           mkdir bundle
           docker save maps-app:offline postgres:17-alpine | gzip -1 > bundle/images.tar.gz
           cp compose.prod.yaml deploy.sh .env.production.example OFFLINE-README.md bundle/

@@ -10,7 +10,7 @@ if ! docker compose version >/dev/null 2>&1; then
   echo "Не найден Docker Compose v2 (команда: docker compose)." >&2
   exit 1
 fi
-if [ -f images.tar.gz ] && ! docker image inspect maps-app:offline >/dev/null 2>&1; then
+if [ -f images.tar.gz ]; then
   echo "Загрузка контейнеров из офлайн-архива..."
   gzip -dc images.tar.gz | docker load
 fi
@@ -23,7 +23,7 @@ if [ ! -f .env ]; then
   sed -e "s|CHANGE_DB_PASSWORD|$random_hex|" -e "s|CHANGE_SEED_PASSWORD|X5-$seed_hex|" -e "s|SERVER_ADDRESS|$server_ip|" .env.production.example > .env
   echo "Создан .env для адреса http://$server_ip:3000"
 fi
-docker compose -f compose.prod.yaml up -d
+docker compose -f compose.prod.yaml up -d --force-recreate
 echo "Ожидание запуска приложения (первый импорт может занять несколько минут)..."
 attempt=0
 until [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose -f compose.prod.yaml ps -q app)" 2>/dev/null || true)" = "healthy" ]; do
@@ -37,5 +37,7 @@ until [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose -f com
 done
 app_url="$(sed -n 's/^APP_URL=//p' .env)"
 echo "Готово: $app_url"
+echo "Логин:  admin@x5.local"
+echo "Пароль: $(sed -n 's/^SEED_PASSWORD=//p' .env)"
 echo "Проверка: docker compose -f compose.prod.yaml ps"
 echo "Логи:    docker compose -f compose.prod.yaml logs -f app"

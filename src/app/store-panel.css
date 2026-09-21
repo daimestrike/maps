@@ -8,3 +8,4 @@
 .coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 5px 0 20px; }
 .detail dl > div { display: contents; }
+.add-store { width: 100%; margin: -8px 0 16px; border-color: #a8d58d; color: #3c742b; font-weight: 700; }

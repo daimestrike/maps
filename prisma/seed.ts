@@ -19,8 +19,9 @@ const empty = (value: string) => value.trim() || null;
 async function main() {
   const password = process.env.SEED_PASSWORD;
   if (!password || password.length < 12 || Buffer.byteLength(password) > 72) throw new Error("Set SEED_PASSWORD: 12–72 bytes");
-  for (const [email, name] of [["ivan@example.com", "Иван (демо)"], ["anna@example.com", "Анна (демо)"]]) {
-    await db.user.upsert({ where: { email }, update: {}, create: { email, name, passwordHash: await hash(password, 12) } });
+  for (const [email, name] of [["admin@x5.local", "Администратор"], ["ivan@example.com", "Иван (демо)"], ["anna@example.com", "Анна (демо)"]]) {
+    const passwordHash = await hash(password, 12);
+    await db.user.upsert({ where: { email }, update: { name, passwordHash }, create: { email, name, passwordHash } });
   }
   const file = path.join(process.cwd(), "prisma/data/stores.csv");
   if (!fs.existsSync(file)) throw new Error("prisma/data/stores.csv not found; run npm run data:prepare");
@@ -49,6 +50,6 @@ async function main() {
     console.log(`Store import skipped: database already contains ${existing} stores.`);
   }
   await db.store.deleteMany({ where: { code: { startsWith: "DEMO-" } } });
-  console.log(`Seed ready: ${rows.length} stores and 2 demo users.`);
+  console.log(`Seed ready: ${rows.length} stores and 3 initial users.`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => db.$disconnect());
